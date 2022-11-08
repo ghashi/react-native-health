@@ -893,11 +893,12 @@
             return;
         }
 
-        [self sendEventWithName:successEvent body:@{}];
+        NSLog(@"Emtting event: %@", successEvent);
+        [self emitEventWithName:successEvent andPayload:@{}];
 
         completionHandler();
 
-        NSLog(@"[HealthKit] New sample from Apple HealthKit processed - %@", type);
+        NSLog(@"[HealthKit] New sample from Apple HealthKit processed (dep) - %@ %@", type, successEvent);
     }];
 
 
@@ -914,7 +915,7 @@
 
         [self.healthStore executeQuery:query];
 
-        [self sendEventWithName:successEvent body:@{}];
+        [self emitEventWithName:successEvent andPayload:@{}];
     }];
 }
 
@@ -947,16 +948,18 @@
 
             NSLog(@"[HealthKit] An error happened when receiving a new sample - %@", error.localizedDescription);
             if(self.hasListeners) {
-                [self sendEventWithName:failureEvent body:@{}];
+                [self emitEventWithName:failureEvent andPayload:@{}];
             }
             return;
         }
         if(self.hasListeners) {
-            [self sendEventWithName:successEvent body:@{}];
+            [self emitEventWithName:successEvent andPayload:@{}];
+        } else {
+            NSLog(@"has no listeners for %@", successEvent);
         }
         completionHandler();
 
-        NSLog(@"[HealthKit] New sample from Apple HealthKit processed - %@", type);
+        NSLog(@"[HealthKit] New sample from Apple HealthKit processed - %@ %@", type, successEvent);
     }];
 
 
@@ -969,14 +972,15 @@
         if (error) {
             NSLog(@"[HealthKit] An error happened when setting up background observer - %@", error.localizedDescription);
             if(self.hasListeners) {
-                [self sendEventWithName:failureEvent body:@{}];
+                [self emitEventWithName:failureEvent andPayload:@{}];
             }
             return;
         }
-
+        NSLog(@"[HealthKit] Background delivery enabled for %@", type);
         [self.healthStore executeQuery:query];
         if(self.hasListeners) {
-            [self sendEventWithName:successEvent body:@{}];
+            NSLog(@"[HealthKit] Background observer set up for %@", type);
+            [self emitEventWithName:successEvent andPayload:@{}];
         }
         }];
 }
